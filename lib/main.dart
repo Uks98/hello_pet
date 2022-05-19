@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:search_pet/page/loginPage.dart';
 
 import 'page/MAINPAGE.dart';
 
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         fontFamily: "jua",
         primarySwatch: Colors.blue,
       ),
-      home: HubPage(),
+      home: const MyPage(),
     );
   }
 }

@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:search_pet/data/api.dart';
 import 'package:search_pet/page/add_pet.dart';
-import 'package:search_pet/page/dumyPage.dart';
 import 'package:search_pet/page/search_pet.dart';
 
 class HubPage extends StatefulWidget {
@@ -13,9 +13,11 @@ class HubPage extends StatefulWidget {
 class _HubPageState extends State<HubPage> {
   int _currentIndex = 0;
   List<Widget>pageList = [SearchPet(),AddPetPage()];
+  void logOut(){
+    FirebaseAuth.instance.signOut();
+  }
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
   @override
@@ -36,6 +38,7 @@ class _HubPageState extends State<HubPage> {
         ],
       ),
       appBar: AppBar(
+        actions : [IconButton(icon: Icon(Icons.logout), onPressed:logOut,),],
         title: const Text("FIND PET",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
         centerTitle: true,
         elevation: 8.0,

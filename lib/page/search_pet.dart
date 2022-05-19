@@ -21,7 +21,6 @@ class _SearchPetState extends State<SearchPet> {
     // TODO: implement initState
     super.initState();
     getPost = api.getData();
-    print(data);
   }
 
   @override
@@ -121,7 +120,7 @@ class _SearchPetState extends State<SearchPet> {
                   SizedBox(
                     height: 5,
                   ),
-                  discovery.length <= 13
+                  discovery.length <= 10
                       ? Text(
                           '구조장소: ${discovery}',
                           style: TextStyle(fontSize: 16),

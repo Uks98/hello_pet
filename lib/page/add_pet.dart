@@ -1,7 +1,7 @@
-
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,9 +18,10 @@ class _AddPetPageState extends State<AddPetPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   File? pickedImage;
-  File? userPickedImage;
   DocumentSnapshot? documentSnapshot;
   String? url;
+
+  final user = FirebaseAuth.instance.currentUser;
 
   void _pickImage() async {
     final imagePicker = ImagePicker();
@@ -34,9 +35,8 @@ class _AddPetPageState extends State<AddPetPage> {
     addImageFun(pickedImage!);
   }
 
-  void addImageFun(File pickedImage){
 
-  }
+  void addImageFun(File pickedImage) {}
 
   // 컬렉션명
   final String colName = "FirstDemo";
@@ -46,20 +46,28 @@ class _AddPetPageState extends State<AddPetPage> {
   final String fnDescription = "location";
   final String fnDatetime = "datetime";
   final String imageUrl = "imageUrl";
+  final String userId = "userId";
+   final String userImage = 'userImage';
 
   TextEditingController _newNameCon = TextEditingController();
   TextEditingController _newDescCon = TextEditingController();
   TextEditingController _undNameCon = TextEditingController();
   TextEditingController _undDescCon = TextEditingController();
   DocumentSnapshot? document;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print(url);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       floatingActionButton: FloatingActionButton(
-
-        onPressed:
-        showCreateDocDialog,
+        onPressed: showCreateDocDialog,
         child: Icon(Icons.add),
         backgroundColor: Color(0xff82A284),
       ),
@@ -81,7 +89,6 @@ class _AddPetPageState extends State<AddPetPage> {
                           ? ListView(
                               children: snapshot.data!.docs
                                   .map((DocumentSnapshot document) {
-                                Timestamp tt = document["datetime"];
                                 DateTime dt = DateTime.now();
                                 final time = DateFormat("yyyy/MM/dd일\n HH시 mm분")
                                     .format(dt);
@@ -97,14 +104,16 @@ class _AddPetPageState extends State<AddPetPage> {
                                       child: Column(
                                         children: <Widget>[
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
                                             children: <Widget>[
-                                              pickedImage!=null ? Container(
-                                                child: Image.file(File(pickedImage!.path),fit: BoxFit.cover,),
-                                              width: 100,
-                                                height: 100,
-                                              )  :Container(color: Colors.redAccent,),
+                                              pickedImage != null
+                                                  ? Container(
+                                                      child: Image.file(File(pickedImage!.path),fit: BoxFit.cover,),
+                                                      width: 100,
+                                                      height: 200,
+                                                    )
+                                                  : Container(
+                                                      color: Colors.redAccent,
+                                                    ),
                                               // Container(
                                               //   width: 150,
                                               //   height: 150,
@@ -112,7 +121,7 @@ class _AddPetPageState extends State<AddPetPage> {
                                               // ),
                                               Text(
                                                 document["name"],
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   color: Colors.blueGrey,
                                                   fontSize: 17,
                                                   fontWeight: FontWeight.bold,
@@ -124,13 +133,17 @@ class _AddPetPageState extends State<AddPetPage> {
                                                     color: Colors.grey[600]),
                                               )
                                             ],
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           ),
                                           Container(
                                             alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              document["location"],
-                                              style: TextStyle(
-                                                  color: Colors.black54),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(left: 10.0),
+                                              child: Text(
+                                                document["location"],
+                                                style: const TextStyle(
+                                                    color: Colors.black54),
+                                              ),
                                             ),
                                           )
                                         ],
@@ -140,7 +153,7 @@ class _AddPetPageState extends State<AddPetPage> {
                                 );
                               }).toList(),
                             )
-                          : LinearProgressIndicator();
+                          : const LinearProgressIndicator();
                     }
                   }),
             ),
@@ -150,24 +163,23 @@ class _AddPetPageState extends State<AddPetPage> {
     );
   }
 
-  void createDoc(String name, String description) async{
+  void createDoc(String name, String description) async {
+    //final userData =  await FirebaseFirestore.instance.collection(colName).doc(user!.uid).get();
     FirebaseFirestore.instance.collection(colName).add({
       fnName: name,
       fnDescription: description,
-      imageUrl : url,
       fnDatetime: Timestamp.now(),
+      userId: user!.uid,
+      'picked_image': url,
+      //userImage: userData['picked_image']
     });
-
-
   }
 
-
-
   // 문서 조회 (Read)
-  void showDocument(String documentID) {
+  void showDocument(User uid) {
     FirebaseFirestore.instance
         .collection(colName)
-        .doc(documentID)
+        .doc(user!.uid)
         .get()
         .then((doc) {
       showReadDocSnackBar(doc);
@@ -175,16 +187,16 @@ class _AddPetPageState extends State<AddPetPage> {
   }
 
   // 문서 갱신 (Update)
-  void updateDoc(String docID, String name, String description) {
-    FirebaseFirestore.instance.collection(colName).doc(docID).update({
+  void updateDoc(String doc, String name, String description) {
+    FirebaseFirestore.instance.collection(colName).doc(user!.uid).update({
       fnName: name,
       fnDescription: description,
     });
   }
 
   // 문서 삭제 (Delete)
-  void deleteDoc(String docID) {
-    FirebaseFirestore.instance.collection(colName).doc(docID).delete();
+  void deleteDoc(String doc) {
+    FirebaseFirestore.instance.collection(colName).doc(user!.uid).delete();
   }
 
   void showCreateDocDialog() {
@@ -231,8 +243,7 @@ class _AddPetPageState extends State<AddPetPage> {
                 Navigator.pop(context);
               },
             ),
-            ElevatedButton(onPressed: () async{
-            }, child: Text("이미지 추가"))
+            ElevatedButton(onPressed: () {}, child: Text("이미지 추가"))
           ],
         );
       },
@@ -284,7 +295,7 @@ class _AddPetPageState extends State<AddPetPage> {
           ),
           actions: <Widget>[
             ElevatedButton(
-              child: Text("Cancel"),
+              child: Text("취소"),
               onPressed: () {
                 _undNameCon.clear();
                 _undDescCon.clear();
@@ -292,8 +303,9 @@ class _AddPetPageState extends State<AddPetPage> {
               },
             ),
             FlatButton(
-              child: Text("Update"),
+              child: Text("업데이트"),
               onPressed: () {
+                final user1 = user;
                 if (_undNameCon.text.isNotEmpty &&
                     _undDescCon.text.isNotEmpty) {
                   updateDoc(doc.id, _undNameCon.text, _undDescCon.text);
@@ -302,26 +314,28 @@ class _AddPetPageState extends State<AddPetPage> {
               },
             ),
             FlatButton(
-              child: Text("Delete"),
+              child: Text("삭제"),
               onPressed: () {
                 deleteDoc(doc.id);
                 Navigator.pop(context);
               },
             ),
             FlatButton(
-              child: Text("pick"),
+              child: Text("선택"),
               onPressed: () {
-              _pickImage();
+                _pickImage();
               },
             ),
             FlatButton(
-              child: Text("addImage"),
-              onPressed: () async{
+              child: Text("이미지 추가하기"),
+              onPressed: () async {
                 //이미지가 저장되는 클라우드 경로에 접근가능메서드
-                final refImage = FirebaseStorage.instance.ref().child('picked_image').child(doc.id.toString() + '.png');
+                final refImage = FirebaseStorage.instance
+                    .ref()
+                    .child('picked_image')
+                    .child(user!.uid.toString() + '.png');
                 await refImage.putFile(pickedImage!);
                 url = await refImage.getDownloadURL();
-                Navigator.pop(context);
               },
             )
           ],

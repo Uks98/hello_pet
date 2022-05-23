@@ -35,7 +35,6 @@ class _AddPetPageState extends State<AddPetPage> {
     addImageFun(pickedImage!);
   }
 
-
   void addImageFun(File pickedImage) {}
 
   // 컬렉션명
@@ -47,12 +46,13 @@ class _AddPetPageState extends State<AddPetPage> {
   final String fnDatetime = "datetime";
   final String imageUrl = "imageUrl";
   final String userId = "userId";
-   final String userImage = 'userImage';
+  final String userImage = 'userImage';
 
   TextEditingController _newNameCon = TextEditingController();
-  TextEditingController _newDescCon = TextEditingController();
+  TextEditingController _locationController = TextEditingController();
   TextEditingController _undNameCon = TextEditingController();
   TextEditingController _undDescCon = TextEditingController();
+  TextEditingController _contentController = TextEditingController();
   DocumentSnapshot? document;
 
   @override
@@ -90,7 +90,7 @@ class _AddPetPageState extends State<AddPetPage> {
                               children: snapshot.data!.docs
                                   .map((DocumentSnapshot document) {
                                 DateTime dt = DateTime.now();
-                                final time = DateFormat("yyyy/MM/dd일\n HH시 mm분")
+                                final time = DateFormat("yyyy/MM/dd일 HH시 mm분")
                                     .format(dt);
                                 return GestureDetector(
                                   onTap: () {
@@ -98,56 +98,84 @@ class _AddPetPageState extends State<AddPetPage> {
                                         snapshot.data!.docs.first);
                                   },
                                   child: Card(
-                                    elevation: 2,
+                                    elevation: 3,
                                     child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      child: Column(
+                                      padding: const EdgeInsets.all(3),
+                                      child: Row(
                                         children: <Widget>[
-                                          Row(
-                                            children: <Widget>[
-                                              pickedImage != null
-                                                  ? Container(
-                                                      child: Image.file(File(pickedImage!.path),fit: BoxFit.cover,),
-                                                      width: 100,
-                                                      height: 200,
-                                                    )
-                                                  : Container(
-                                                      color: Colors.redAccent,
+                                          pickedImage != null
+                                              ? Padding(
+                                                padding: const EdgeInsets.only(top: 15.0),
+                                                child: ClipRRect(
+                                                    child: Container(
+                                                      child: Image.file(
+                                                        File(pickedImage!
+                                                            .path),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                      width: 150,
+                                                      height: 150,
                                                     ),
-                                              // Container(
-                                              //   width: 150,
-                                              //   height: 150,
-                                              //   child: Image.network(document["imgUrl"],fit: BoxFit.cover,),
-                                              // ),
-                                              Text(
-                                                document["name"],
-                                                style: const TextStyle(
-                                                  color: Colors.blueGrey,
-                                                  fontSize: 17,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              Text(
-                                                time,
-                                                style: TextStyle(
-                                                    color: Colors.grey[600]),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            30),
+                                                  ),
                                               )
-                                            ],
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          ),
-                                          Container(
-                                            alignment: Alignment.centerLeft,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(left: 10.0),
-                                              child: Text(
-                                                document["location"],
-                                                style: const TextStyle(
-                                                    color: Colors.black54),
-                                              ),
+                                              : Container(
+                                                  color: Colors.redAccent,
+                                                ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 19.0),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                SizedBox(
+                                                  height: 30,
+                                                ),
+                                                Text(
+                                                  document["name"],
+                                                  style: const TextStyle(
+                                                    color: Colors.blueGrey,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Container(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Text(
+                                                    '위치: ${document["location"]}',
+                                                    style: const TextStyle(
+                                                        color: Colors.black54,fontSize: 17),
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Container(
+                                                  width: 200,
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Text(
+                                                    '${document["content"]}',
+                                                    style: const TextStyle(
+                                                        color: Colors.black54,fontSize: 15,),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 10,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5,),
+                                                Container(
+                                                  width: 200,
+                                                  child: Text(
+                                                    time,
+                                                    style: TextStyle(
+                                                        color: Colors.grey[600]),
+                                                  ),
+                                                )
+                                              ],
                                             ),
-                                          )
-                                        ],
-                                      ),
+                                          ),
+
+                                          ],
+                                          ),
                                     ),
                                   ),
                                 );
@@ -163,7 +191,7 @@ class _AddPetPageState extends State<AddPetPage> {
     );
   }
 
-  void createDoc(String name, String description) async {
+  void createDoc(String name, String description, String content) async {
     //final userData =  await FirebaseFirestore.instance.collection(colName).doc(user!.uid).get();
     FirebaseFirestore.instance.collection(colName).add({
       fnName: name,
@@ -171,32 +199,25 @@ class _AddPetPageState extends State<AddPetPage> {
       fnDatetime: Timestamp.now(),
       userId: user!.uid,
       'picked_image': url,
+      'content': content
       //userImage: userData['picked_image']
     });
   }
 
-  // 문서 조회 (Read)
-  void showDocument(User uid) {
-    FirebaseFirestore.instance
-        .collection(colName)
-        .doc(user!.uid)
-        .get()
-        .then((doc) {
-      showReadDocSnackBar(doc);
-    });
-  }
 
   // 문서 갱신 (Update)
-  void updateDoc(String doc, String name, String description) {
-    FirebaseFirestore.instance.collection(colName).doc(user!.uid).update({
+  void updateDoc(
+      {required DocumentSnapshot doc, required String name, required String description, required String content}) {
+    FirebaseFirestore.instance.collection(colName).doc(doc.id).update({
       fnName: name,
       fnDescription: description,
+      'content' : content,
     });
   }
 
   // 문서 삭제 (Delete)
-  void deleteDoc(String doc) {
-    FirebaseFirestore.instance.collection(colName).doc(user!.uid).delete();
+  void deleteDoc(User user) {
+    FirebaseFirestore.instance.collection(colName).doc(user.uid).delete();
   }
 
   void showCreateDocDialog() {
@@ -204,47 +225,66 @@ class _AddPetPageState extends State<AddPetPage> {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text("Create New Document"),
-          content: Container(
-            height: 200,
-            child: Column(
-              children: <Widget>[
-                TextField(
-                  autofocus: true,
-                  decoration: InputDecoration(labelText: "Name"),
-                  controller: _newNameCon,
-                ),
-                TextField(
-                  decoration: InputDecoration(labelText: "Description"),
-                  controller: _newDescCon,
-                )
-              ],
+        return Container(
+          width: MediaQuery.of(context).size.width * 0.45,
+          child: AlertDialog(
+            contentPadding: EdgeInsets.all(20),
+            insetPadding: EdgeInsets.zero,
+            title: const Text("강아지를 찾아주세요!"),
+            content: Container(
+              height: 200,
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    autofocus: true,
+                    decoration: InputDecoration(labelText: "제목"),
+                    controller: _newNameCon,
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: "위치"),
+                    controller: _locationController,
+                  ),
+                  TextField(
+                    controller: _contentController,
+                    decoration: InputDecoration(
+                      labelText: "내용",
+                    ),
+                  ),
+                ],
+              ),
             ),
+            actions: <Widget>[
+              ElevatedButton(
+                child: Text("취소"),
+                onPressed: () {
+                  _newNameCon.clear();
+                  _locationController.clear();
+                  _contentController.clear();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(primary: Color(0xff947EC3)),
+              ),
+              ElevatedButton(
+                child: Text("작성하기"),
+                onPressed: () {
+                  if (_locationController.text.isNotEmpty &&
+                      _newNameCon.text.isNotEmpty) {
+                    createDoc(_newNameCon.text, _locationController.text,
+                        _contentController.text);
+                  }
+                  _newNameCon.clear();
+                  _locationController.clear();
+                  _contentController.clear();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(primary: Color(0xff6A67CE)),
+              ),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(primary: Color(0xffB689C0)),
+                  onPressed: _pickImage,
+                  child: Text("이미지 추가"))
+            ],
           ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text("Cancel"),
-              onPressed: () {
-                _newNameCon.clear();
-                _newDescCon.clear();
-                Navigator.pop(context);
-              },
-            ),
-            FlatButton(
-              child: Text("Create"),
-              onPressed: () {
-                if (_newDescCon.text.isNotEmpty &&
-                    _newNameCon.text.isNotEmpty) {
-                  createDoc(_newNameCon.text, _newDescCon.text);
-                }
-                _newNameCon.clear();
-                _newDescCon.clear();
-                Navigator.pop(context);
-              },
-            ),
-            ElevatedButton(onPressed: () {}, child: Text("이미지 추가"))
-          ],
         );
       },
     );
@@ -277,7 +317,7 @@ class _AddPetPageState extends State<AddPetPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Update/Delete Document"),
+          title: Text("수정 및 삭제하기"),
           content: Container(
             height: 200,
             child: Column(
@@ -302,31 +342,29 @@ class _AddPetPageState extends State<AddPetPage> {
                 Navigator.pop(context);
               },
             ),
-            FlatButton(
+            ElevatedButton(
               child: Text("업데이트"),
               onPressed: () {
-                final user1 = user;
                 if (_undNameCon.text.isNotEmpty &&
                     _undDescCon.text.isNotEmpty) {
-                  updateDoc(doc.id, _undNameCon.text, _undDescCon.text);
+                  FirebaseFirestore.instance.collection(colName).doc(doc.id).update({
+                    fnName: _newNameCon.text,
+                    fnDescription: _locationController.text,
+                    'content' : _contentController.text,
+                  });
+                  //updateDoc(doc: documentSnapshot.id, description:_undNameCon.text,content :_contentController.text, description: _undDescCon.text, name: '');
                 }
                 Navigator.pop(context);
               },
             ),
-            FlatButton(
+            ElevatedButton(
               child: Text("삭제"),
               onPressed: () {
-                deleteDoc(doc.id);
+                FirebaseFirestore.instance.collection(colName).doc(doc.id).delete();
                 Navigator.pop(context);
               },
             ),
-            FlatButton(
-              child: Text("선택"),
-              onPressed: () {
-                _pickImage();
-              },
-            ),
-            FlatButton(
+            ElevatedButton(
               child: Text("이미지 추가하기"),
               onPressed: () async {
                 //이미지가 저장되는 클라우드 경로에 접근가능메서드

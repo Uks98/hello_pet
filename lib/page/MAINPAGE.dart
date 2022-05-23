@@ -38,7 +38,8 @@ class _HubPageState extends State<HubPage> {
         ],
       ),
       appBar: AppBar(
-        actions : [IconButton(icon: Icon(Icons.logout), onPressed:logOut,),],
+        actions : [IconButton(icon: Icon(Icons.logout), onPressed:logOut,),
+          IconButton(icon: Icon(Icons.share), onPressed: () { }, ),],
         title: const Text("FIND PET",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
         centerTitle: true,
         elevation: 8.0,

@@ -23,6 +23,12 @@ class ShowDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("FIND PET",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
+        centerTitle: true,
+        elevation: 8.0,
+        backgroundColor: Color(0xff82A284),
+      ),
       body: SingleChildScrollView(
         child: Container(
           child: Column(
